@@ -1,17 +1,22 @@
 # BandCo 어드민 콘솔
 
-BandCo(JamPlay) 운영용 데스크톱 웹 앱이다. 서비스 앱(`frontend/`)과 분리된 별도 Vite 프로젝트이며, Vercel에도 별도 프로젝트로 배포하고 서브도메인 `admin.<서비스 도메인>`으로 연다.
+BandCo(JamPlay) 운영용 데스크톱 웹 앱이다. 서비스 앱·백엔드가 있는 본 저장소 [BandCo-House/BandCo](https://github.com/BandCo-House/BandCo)와 분리된 저장소이며, Vercel에도 별도 프로젝트로 배포하고 서브도메인 `admin.<서비스 도메인>`으로 연다.
+
+- 어드민 API(`/admin/*`)는 본 저장소의 백엔드(`backend/src/modules/admin`)에 있다. API를 바꾸는 작업은 본 저장소 PR과 이 저장소 PR이 함께 나간다.
+- 처음 코드는 본 저장소 PR #251의 `admin/` 폴더에서 이력째 옮겨 왔다.
 
 - 스택: Vite + React 19 + TypeScript, TanStack Router(코드 기반 라우트 트리), TanStack Query, axios, Tailwind CSS v4, lucide-react, sonner
-- API 계약: `backend/docs/backend/api-docs/admin.md`
+- API 계약: [backend/docs/backend/api-docs/admin.md](https://github.com/BandCo-House/BandCo/blob/dev/backend/docs/backend/api-docs/admin.md) (본 저장소)
+- 운영 문서: [backend/docs/backend/operations/admin-console.md](https://github.com/BandCo-House/BandCo/blob/dev/backend/docs/backend/operations/admin-console.md) (시크릿·첫 계정·로컬 확인)
 
 ## 어드민 계정
 
 어드민 계정은 서비스 회원(`users`)과 **완전히 분리된** `admin_users` 계정이다. 서비스 회원 계정으로는 로그인할 수 없고, 회원가입도 없다.
 
-- 첫 계정(SUPER_ADMIN)은 백엔드에서 CLI로 만든다.
+- 첫 계정(SUPER_ADMIN)은 본 저장소 백엔드에서 CLI로 만든다. 대상 DB를 셸에서 직접 지정해야 하며 자세한 방법은 위 운영 문서를 본다.
 
   ```bash
+  # BandCo 저장소에서
   cd backend
   pnpm run admin:create
   ```
@@ -26,8 +31,9 @@ BandCo(JamPlay) 운영용 데스크톱 웹 앱이다. 서비스 앱(`frontend/`)
 어드민 콘솔은 서비스와 다른 서브도메인으로 연다(예: `https://admin.<서비스 도메인>`).
 
 - **서비스 도메인의 `/admin` 경로로 열지 않는 이유**: 같은 출처(origin)가 되면 서비스 앱에서 실행되는 스크립트(XSS나 오염된 npm 의존성)가 어드민 토큰이 든 `localStorage`를 그대로 읽을 수 있다. 서브도메인은 출처가 달라 저장소가 분리된다.
-- Vercel 프로젝트: Root Directory `admin`, Framework Vite, Output Directory `dist`(기본값), 환경 변수 `VITE_API_BASE_URL`=운영 백엔드 주소.
-- 도메인: Vercel 프로젝트 설정 → Domains에서 `admin.<서비스 도메인>`을 추가하고, 안내대로 DNS에 CNAME을 등록한다.
+- Vercel 프로젝트: 이 저장소를 Import, Root Directory는 기본값(저장소 루트), Framework Vite, Output Directory `dist`(기본값), 환경 변수 `VITE_API_BASE_URL`=운영 백엔드 주소. 공개 저장소라 개인 Hobby 계정에서도 가져올 수 있다.
+- 패키지 매니저는 `package.json`의 `packageManager`(pnpm 10)로 고정한다. 본 저장소 루트와 같은 버전이다.
+- 도메인: Vercel 프로젝트 설정 → Domains에서 `admin.<서비스 도메인>`을 추가하고, 안내대로 DNS에 CNAME을 등록한다. 서비스 앱과 다른 Vercel 계정이면 소유 확인용 TXT 레코드를 함께 요구할 수 있다.
 - 백엔드 CORS는 출처를 제한하지 않아 서브도메인에서도 API를 바로 호출할 수 있다.
 - 서비스 앱 로그인 화면에는 어드민으로 가는 링크를 두지 않았다. 운영자는 주소로 직접 들어간다.
 
@@ -46,10 +52,11 @@ VITE_API_BASE_URL=http://localhost:3000
 ## 실행
 
 ```bash
-cd admin
 pnpm install
 pnpm dev          # http://localhost:5174
 ```
+
+백엔드는 본 저장소에서 따로 띄운다(기본 주소 `http://localhost:3000`).
 
 ## 빌드·검증
 
